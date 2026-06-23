@@ -5,86 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About You - Yaexz</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    
     <style>
         body {
-            font-family: 'Inter', sans-serif;
             background-image: url('https://img.sanishtech.com/u/4480232563112b1a41e5c850b4ef4159.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-repeat: no-repeat;
-            color: #e4e4e7;
             margin: 0;
             overflow: hidden;
-        }
-        .serif { font-family: 'Playfair Display', serif; }
-
-        .animate-fade-in { animation: fadeInAnimation 1.5s ease-out forwards; }
-        @keyframes fadeInAnimation {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Bintang Jatuh - Pointer Events None agar klik tembus */
-        .stars-container { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
-        .star { position: absolute; width: 2px; height: 2px; background: white; opacity: 0; }
-        @keyframes shooting-star {
+        /* Pixel Star - Gaya Pixel Art */
+        .stars-container { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+        .star { 
+            position: absolute; 
+            width: 4px; height: 4px; 
+            background: #fff; 
+            box-shadow: -4px 0 0 #fff, -8px 0 0 rgba(255,255,255,0.6), -12px 0 0 rgba(255,255,255,0.3);
+            opacity: 0;
+        }
+        
+        /* Animasi jatuh lebih vertikal */
+        @keyframes shooting-star-pixel {
             0% { transform: translateY(0) translateX(0); opacity: 0; }
             10% { opacity: 1; }
-            20% { transform: translateY(300px) translateX(300px); opacity: 0; }
+            50% { transform: translateY(600px) translateX(150px); opacity: 0; }
             100% { opacity: 0; }
         }
 
-        /* Overlay Klik - Pastikan ini paling depan */
-        #start-overlay {
-            z-index: 100;
-            cursor: pointer;
-            transition: opacity 0.8s ease;
-        }
+        #start-overlay { z-index: 100; transition: opacity 0.8s ease; cursor: pointer; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center">
+<body class="min-h-screen flex items-center justify-center">
 
     <div class="fixed inset-0 bg-black/60 z-0"></div>
     <div id="stars" class="stars-container"></div>
 
-    <!-- Overlay Klik - Harus bisa di-klik -->
     <div id="start-overlay" class="fixed inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-        <p class="serif text-5xl italic text-white/90 mb-6">About You</p>
+        <p class="text-5xl italic text-white/90 mb-6 font-serif">About You</p>
         <p class="text-xs text-zinc-400 uppercase tracking-[0.3em] animate-pulse">Klik di mana saja untuk mulai</p>
     </div>
 
-    <!-- Konten Utama -->
-    <main class="animate-fade-in opacity-0 w-full max-w-3xl px-6 flex flex-col items-center text-center z-20">
-        <h1 class="serif text-6xl font-bold text-white mb-4">About You</h1>
-        <p class="text-zinc-400 uppercase tracking-widest mb-12">yaexz</p>
-
-        <div class="w-64 h-64 rounded-full bg-zinc-900 border-4 border-zinc-700 shadow-2xl flex items-center justify-center">
-            <div class="w-20 h-20 bg-zinc-800 rounded-full border border-zinc-700"></div>
-        </div>
+    <main class="text-center z-20 text-white animate-pulse">
+        <h1 class="text-6xl font-bold mb-4 font-serif">About You</h1>
+        <p class="text-zinc-400 uppercase tracking-widest">yaexz</p>
     </main>
 
-    <!-- YouTube IFrame -->
     <div id="ytplayer" class="hidden"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         let player;
 
-        // Inisialisasi Bintang
-        const starsContainer = document.getElementById('stars');
-        for(let i=0; i<6; i++) {
+        // Membuat bintang pixel
+        function createPixelStar() {
             const s = document.createElement('div');
             s.className = 'star';
-            s.style.top = Math.random() * 40 + '%';
+            s.style.top = Math.random() * -10 + '%';
             s.style.left = Math.random() * 100 + '%';
-            s.style.animation = `shooting-star ${Math.random() * 3 + 3}s linear infinite`;
-            starsContainer.appendChild(s);
+            s.style.animation = `shooting-star-pixel ${Math.random() * 3 + 3}s linear infinite`;
+            document.getElementById('stars').appendChild(s);
         }
+        for(let i=0; i<12; i++) createPixelStar();
 
-        // YouTube API
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('ytplayer', {
                 videoId: '28Lj4qt3lCc',
