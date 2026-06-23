@@ -2,88 +2,71 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>About You - Yaexz</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>By Yaezz</title>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
-        body {
-            background-image: url('https://img.sanishtech.com/u/4480232563112b1a41e5c850b4ef4159.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .stars-container { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
-        
-        .star { 
-            position: absolute; 
-            width: 4px; height: 4px; 
-            background: #fff; 
-            /* Buntut diatur secara relatif terhadap objek */
-            box-shadow: 0px 0 0 #fff, 4px 0 0 rgba(255,255,255,0.7), 8px 0 0 rgba(255,255,255,0.4), 12px 0 0 rgba(255,255,255,0.1);
-            opacity: 0;
-            transform-origin: center;
-        }
-
-        @keyframes shooting-star-pixel {
-            0% { transform: translateY(0) translateX(0) rotate(45deg); opacity: 0; }
-            10% { opacity: 1; }
-            50% { transform: translateY(600px) translateX(150px) rotate(45deg); opacity: 0; }
-            100% { opacity: 0; }
-        }
-
-        #start-overlay { z-index: 100; transition: opacity 0.8s ease; cursor: pointer; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        #intro { position: fixed; inset: 0; background: #000; color: white; display: flex; align-items: center; justify-content: center; z-index: 999; cursor: pointer; }
+        #bg { position: fixed; inset: 0; background-image: url('https://img.sanishtech.com/u/46a88b87b59523d4b50edcc7c1b8524c.jpg'); background-size: cover; background-position: center; display: none; }
+        .star { position: absolute; width: 40px; height: 40px; background-image: url('https://w7.pngwing.com/pngs/883/837/png-transparent-yellow-star-illustration-falling-pixel-star-pro-pixel-art-star-thumbnail.png'); background-size: contain; filter: drop-shadow(0 0 15px white); z-index: 1; pointer-events: none; }
+        #name { position: absolute; top: 20px; right: 30px; color: white; font-size: 24px; font-weight: bold; z-index: 2; }
+        #player { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 20px; border-radius: 15px; color: white; width: 320px; text-align: center; z-index: 10; }
+        button { cursor: pointer; padding: 5px 15px; margin: 5px; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
+<body>
 
-    <div class="fixed inset-0 bg-black/60 z-0"></div>
-    <div id="stars" class="stars-container"></div>
+<div id="intro"><h1>Click Anywhere</h1></div>
+<div id="bg"></div>
+<div id="name">By Yaezz</div>
 
-    <div id="start-overlay" class="fixed inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-        <p class="text-5xl italic text-white/90 mb-6 font-serif">About You</p>
-        <p class="text-xs text-zinc-400 uppercase tracking-[0.3em] animate-pulse">Klik di mana saja untuk mulai</p>
-    </div>
+<div id="player">
+    <div id="song-title">Siap Memutar...</div>
+    <div id="timer">0:00 / 0:00</div>
+    <button onclick="prevSong()">Prev</button>
+    <button onclick="nextSong()">Next</button>
+</div>
 
-    <main class="text-center z-20 text-white animate-pulse">
-        <h1 class="text-6xl font-bold mb-4 font-serif">About You</h1>
-        <p class="text-zinc-400 uppercase tracking-widest">yaexz</p>
-    </main>
+<div id="youtube-player" style="display:none"></div>
 
-    <div id="ytplayer" class="hidden"></div>
+<script>
+    const songIds = [
+        "J3x4o4bM1wM", "q8NjtHj2x5c", "IIRYYEvd7SY", "Vq6wz4695sM", "r9S7J1gJ8M4", "Qk32G_i6_6E", "219r9Jd_M7Y", "a6uRk1j9cM0", "7p8l9k2j3h4", "o7r8t9y0u1i", 
+        "L7_S326S13M", "8y85348954", "s569348543", "4534853489", "5438954343", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854",
+        "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854",
+        "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854", "5438543854"
+    ];
+    let player, currentIdx = 0;
 
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        let player;
-        function createPixelStar() {
-            const s = document.createElement('div');
-            s.className = 'star';
-            s.style.top = Math.random() * -10 + '%';
-            s.style.left = Math.random() * 100 + '%';
-            // Menambahkan rotasi dinamis agar shadow mengikuti arah jatuh
-            const duration = Math.random() * 3 + 3;
-            s.style.animation = `shooting-star-pixel ${duration}s linear infinite`;
-            document.getElementById('stars').appendChild(s);
-        }
-        for(let i=0; i<12; i++) createPixelStar();
+    document.getElementById('intro').onclick = () => {
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('bg').style.display = 'block';
+        initPlayer();
+        setInterval(spawnStar, 2000);
+    };
 
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('ytplayer', {
-                videoId: '28Lj4qt3lCc',
-                events: { 'onReady': initClick }
-            });
-        }
+    function initPlayer() {
+        player = new YT.Player('youtube-player', {
+            videoId: songIds[currentIdx],
+            events: { 'onReady': (e) => e.target.playVideo() }
+        });
+    }
 
-        function initClick() {
-            const overlay = document.getElementById('start-overlay');
-            overlay.addEventListener('click', () => {
-                player.playVideo();
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.style.display = 'none', 800);
-            });
-        }
-    </script>
+    function nextSong() { currentIdx = (currentIdx + 1) % songIds.length; player.loadVideoById(songIds[currentIdx]); }
+    function prevSong() { currentIdx = (currentIdx - 1 + songIds.length) % songIds.length; player.loadVideoById(songIds[currentIdx]); }
+
+    function spawnStar() {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const startX = Math.random() * window.innerWidth;
+        star.style.left = startX + 'px'; star.style.top = '-50px';
+        document.body.appendChild(star);
+        let pos = -50;
+        let anim = setInterval(() => {
+            pos += 3; star.style.top = pos + 'px'; star.style.left = (startX + (pos/5)) + 'px';
+            if (pos > window.innerHeight) { star.remove(); clearInterval(anim); }
+        }, 20);
+    }
+</script>
 </body>
 </html>
