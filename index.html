@@ -6,6 +6,7 @@
     <title>By Yaezz - Violet Edition</title>
     <!-- Memuat YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
@@ -13,22 +14,41 @@
         
         body, html { 
             height: 100vh; overflow: hidden; 
-            background: radial-gradient(ellipse at bottom, #1e0a3c, #05010a);
+            /* Mengembalikan background asli yang dikirimkan user */
+            background: radial-gradient(ellipse at bottom, #0D1E31, #111);
             font-family: 'Inter', sans-serif; 
             color: #fff; user-select: none;
         }
 
+        /* Tampilan Intro yang Baru & Jauh Lebih Bagus */
         #intro { 
-            position: fixed; inset: 0; background: #05010a; 
+            position: fixed; inset: 0; 
+            background: radial-gradient(ellipse at bottom, #0D1E31, #05010a);
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 999; cursor: pointer; transition: opacity 1s ease;
+            z-index: 999; cursor: pointer; transition: opacity 1s ease, visibility 1s;
         }
         #intro h1 {
-            font-size: 2rem; font-weight: 400; letter-spacing: 2px;
-            animation: pulse 2s infinite; text-transform: uppercase; color: #e9d5ff;
+            font-size: 2.5rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase;
+            color: #fff; text-shadow: 0 0 20px rgba(95, 145, 255, 0.8);
+            margin-bottom: 10px; z-index: 2;
         }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; text-shadow: 0 0 20px #8b5cf6; } }
+        #intro p {
+            font-size: 1rem; color: #a78bfa; letter-spacing: 1px; z-index: 2;
+            animation: blink 2s infinite;
+        }
+        .pulse-ring {
+            position: absolute; width: 150px; height: 150px;
+            border-radius: 50%; border: 2px solid #5F91FF;
+            animation: pulsing 2.5s infinite ease-out; z-index: 1;
+        }
 
+        @keyframes pulsing {
+            0% { transform: scale(0.8); opacity: 1; box-shadow: 0 0 0 0 rgba(95, 145, 255, 0.7); }
+            100% { transform: scale(2.5); opacity: 0; box-shadow: 0 0 0 30px rgba(95, 145, 255, 0); }
+        }
+        @keyframes blink { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* Mengembalikan CSS Bintang Persis Sesuai Permintaan User */
         .night {
             position: absolute; width: 200%; height: 200%;
             top: -50%; left: -50%;
@@ -39,17 +59,18 @@
 
         .star {
             position: absolute; height: 4px;
-            background: linear-gradient(-45deg, #a78bfa, rgba(0, 0, 255, 0)); /* Ungu */
+            background: linear-gradient(-45deg, #5F91FF, rgba(0, 0, 255, 0));
             border-radius: 999px;
-            filter: drop-shadow(0 0 6px #a78bfa);
+            filter: drop-shadow(0 0 6px #699BFF);
             animation: tail 3s ease-in-out infinite, falling 3s ease-in-out infinite;
-            animation-delay: var(--delay, 0s);
+            /* Delay custom agar dari JS jatuhnya acak, bukan barengan */
+            animation-delay: var(--delay, 0s); 
         }
 
         .star::before, .star::after {
             content: ''; position: absolute;
             top: calc(50% - 2px); right: 0; height: 4px;
-            background: linear-gradient(-45deg, rgba(0, 0, 255, 0), #c4b5fd, rgba(0, 0, 255, 0));
+            background: linear-gradient(-45deg, rgba(0, 0, 255, 0), #5F91FF, rgba(0, 0, 255, 0));
             border-radius: 100%;
             transform: translateX(50%) rotateZ(45deg);
             animation: shining 3s ease-in-out infinite;
@@ -60,13 +81,14 @@
             transform: translateX(50%) rotateZ(-45deg);
         }
 
-        @keyframes tail { 0% { width: 0; } 30% { width: 150px; } 100% { width: 0; } }
-        @keyframes falling { 0% { transform: translateX(0); } 100% { transform: translateX(800px); } }
-        @keyframes shining { 0% { width: 0; } 50% { width: 35px; } 100% { width: 0; } }
+        @keyframes tail { 0% { width: 0; } 30% { width: 100px; } 100% { width: 0; } }
+        @keyframes falling { 0% { transform: translateX(0); } 100% { transform: translateX(300px); } }
+        @keyframes shining { 0% { width: 0; } 50% { width: 30px; } 100% { width: 0; } }
 
+        /* Tema Player (Ungu / Violet) */
         #player { 
             position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); 
-            background: rgba(30, 10, 60, 0.5); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: rgba(30, 10, 60, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             padding: 25px; border-radius: 24px; width: 90%; max-width: 400px; 
             border: 1px solid rgba(167, 139, 250, 0.2);
             z-index: 10; display: none; flex-direction: column; gap: 15px;
@@ -96,24 +118,25 @@
         .btn-main { width: 55px; height: 55px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; border: 2px solid transparent; }
         .btn-main:hover { transform: scale(1.05); }
         
-        /* Mode Play (Musik Berhenti) -> Latar Putih/Ungu Terang, Ikon Ungu Gelap */
         .mode-play { background: #e9d5ff; }
         .mode-play svg { fill: #2e1065; width: 22px; height: 22px; }
 
-        /* Mode Pause (Musik Berjalan) -> Latar Transparan (Garis), Ikon Putih/Ungu Terang */
         .mode-pause { background: transparent; border-color: rgba(233, 213, 255, 0.5); }
         .mode-pause svg { fill: #e9d5ff; width: 22px; height: 22px; }
 
-        /* Container YT Audio (Disembunyikan agar tidak mengganggu) */
         #yt-container { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; z-index: -999; }
     </style>
 </head>
 <body>
 
-<div id="intro"><h1>Click Anywhere</h1></div>
+<div id="intro">
+    <div class="pulse-ring"></div>
+    <h1>Start Music</h1>
+    <p>Click anywhere to explore</p>
+</div>
 
 <div class="night">
-    <!-- Bintang akan di-generate via JavaScript di sini -->
+    <!-- Bintang akan di-generate via JavaScript di sini agar acak -->
 </div>
 
 <div id="player">
@@ -141,19 +164,19 @@
 <div id="yt-container"><div id="yt-player"></div></div>
 
 <script>
-    // 48 Lagu lengkap menggunakan ID Audio YouTube agar pemutar (seek & timer) berfungsi 100% normal
+    // Playlist dengan beberapa ID yang diperbarui (Video Lirik / Reupload Audio)
     const playlist = [
-        { title: "Space Song", artist: "Beach House", id: "RBtlPT23PTM" },
+        { title: "Space Song", artist: "Beach House", id: "Hvgu7bro3AY" }, // Re-upload / Audio
         { title: "Myth", artist: "Beach House", id: "FvqNdJJMqaA" },
         { title: "When You Sleep", artist: "My Bloody Valentine", id: "l9bTWAgYCFk" },
         { title: "Cherry-coloured Funk", artist: "Cocteau Twins", id: "WQNkEaA0g2s" },
-        { title: "Sunsetz", artist: "Cigarettes After Sex", id: "WSByUqQ_d-w" },
+        { title: "Sunsetz", artist: "Cigarettes After Sex", id: "biwWsP2BuRM" }, // Re-upload / Lyric
         { title: "Cry", artist: "Cigarettes After Sex", id: "2T0q1P_-IQQ" },
         { title: "alife", artist: "Slowdive", id: "GkXG-Z11rE8" },
         { title: "Sugar for the Pill", artist: "Slowdive", id: "BxwPBwqm6Zs" },
         { title: "Always Forever", artist: "Cults", id: "rxW0oB8mOxc" },
         { title: "seasons", artist: "wave to earth", id: "x4x_P_I1jAE" },
-        { title: "Robbers", artist: "The 1975", id: "Iyy3YaHWz-Y" },
+        { title: "Robbers", artist: "The 1975", id: "F8yNA9ortNw" }, // Re-upload / Lyric
         { title: "Fallingforyou", artist: "The 1975", id: "iF2s_wBwKqI" },
         { title: "Medicine", artist: "The 1975", id: "8b2O0EaDk4M" },
         { title: "Lostmyhead", artist: "The 1975", id: "2o_BngS62wA" },
@@ -185,7 +208,7 @@
         { title: "Come Inside Of My Heart", artist: "IV OF SPADES", id: "vV23s8i0h2k" },
         { title: "mirrorball", artist: "Taylor Swift", id: "AWeq-1h9N-k" },
         { title: "You Are In Love", artist: "Taylor Swift", id: "UPEiK_10bWc" },
-        { title: "august", artist: "Taylor Swift", id: "nn_0zPAfyo8" },
+        { title: "august", artist: "Taylor Swift", id: "9oRTVVIOPPA" }, // Re-upload / Lyric
         { title: "Guilty As Sin?", artist: "Taylor Swift", id: "NnF2H5Q8i7A" },
         { title: "Strawberries & Cigarettes", artist: "Troye Sivan", id: "XzW5M-GqAok" },
         { title: "The Scientist", artist: "Coldplay", id: "RB-RcX5DS5A" },
@@ -201,6 +224,8 @@
 
     document.getElementById('intro').onclick = () => {
         document.getElementById('intro').style.opacity = '0';
+        document.getElementById('intro').style.visibility = 'hidden';
+        
         setTimeout(() => { document.getElementById('intro').style.display = 'none'; }, 1000);
 
         document.querySelector('.night').style.display = 'block';
@@ -212,15 +237,14 @@
 
     function generateStars() {
         const night = document.querySelector('.night');
-        night.innerHTML = ''; // Bersihkan bintang lama
-        // Buat 15 bintang dengan posisi dan jeda waktu jatuhnya acak
+        night.innerHTML = '';
+        // Menyebarkan 15 bintang secara acak agar persis seperti CSS user tetapi tidak menumpuk
         for(let i = 0; i < 15; i++) {
             const star = document.createElement('div');
             star.className = 'star';
             star.style.left = (Math.random() * 80 + 10) + '%';
             star.style.top = (Math.random() * 80 + 10) + '%';
-            // Set jeda animasi acak melalui custom variable agar sync ke pseudo-element (ekor)
-            star.style.setProperty('--delay', (Math.random() * 4) + 's');
+            star.style.setProperty('--delay', (Math.random() * 5) + 's');
             night.appendChild(star);
         }
     }
@@ -266,9 +290,10 @@
 
     function onPlayerError(event) {
         document.getElementById('song-title').innerText = playlist[currentIdx].title;
-        document.getElementById('song-artist').innerText = "Lewati karena diblokir (3s)...";
+        // Waktu skip dipercepat jadi 1.5 detik agar pengguna tidak menunggu lama jika lagu terblokir
+        document.getElementById('song-artist').innerText = "Diblokir YT. Melewati otomatis...";
         document.getElementById('song-artist').style.color = '#ef4444'; 
-        errorTimeout = setTimeout(() => { nextSong(); }, 3000);
+        errorTimeout = setTimeout(() => { nextSong(); }, 1500); 
     }
 
     function updateSongInfo() {
@@ -300,7 +325,6 @@
         const timeCurrent = document.getElementById('time-current');
         const timeDuration = document.getElementById('time-duration');
 
-        // Melacak durasi berjalan (Hanya berjalan jika tidak sedang di-drag)
         setInterval(() => {
             if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING && !isDragging) {
                 const current = player.getCurrentTime();
@@ -313,7 +337,6 @@
             }
         }, 500);
 
-        // Perbaikan Bug Slider: 'input' melacak drag, 'change' menerapkan waktu
         progressBar.addEventListener('input', (e) => {
             isDragging = true;
             if (player && player.getDuration) {
@@ -327,7 +350,7 @@
                 const duration = player.getDuration();
                 player.seekTo((e.target.value / 100) * duration, true);
             }
-            isDragging = false; // Kembalikan agar jam update otomatis menyala lagi
+            isDragging = false; 
         });
     }
 
