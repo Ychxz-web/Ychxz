@@ -3,338 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>By Yaezz</title>
-    <!-- Memuat YouTube IFrame API -->
+    <title>Violet Music Player</title>
     <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
         
         body, html { 
-            height: 100%; overflow: hidden; background: #000; 
-            font-family: 'Inter', sans-serif; color: #fff; user-select: none;
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: url('https://img.sanishtech.com/u/46a88b87b59523d4b50edcc7c1b8524c.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
         }
 
-        /* Layar Intro */
+        .overlay { position: absolute; inset: 0; background: rgba(76, 29, 149, 0.4); z-index: 1; }
+
         #intro { 
-            position: fixed; inset: 0; background: #050505; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 999; cursor: pointer; transition: opacity 1s ease;
+            position: fixed; inset: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(46, 16, 101, 0.4); backdrop-filter: blur(20px);
+            transition: opacity 0.8s ease, visibility 0.8s; cursor: pointer;
         }
-        #intro h1 {
-            font-size: 2rem; font-weight: 400; letter-spacing: 2px;
-            animation: pulse 2s infinite; text-transform: uppercase;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; text-shadow: 0 0 15px rgba(255,255,255,0.8); }
+        .intro-card {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px; border-radius: 30px; text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
-        /* Background Utama */
-        #bg { 
-            position: fixed; inset: 0; 
-            background-image: url('https://img.sanishtech.com/u/46a88b87b59523d4b50edcc7c1b8524c.jpg'); 
-            background-size: cover; background-position: center; 
-            display: none; opacity: 0; transition: opacity 2s ease;
+        .night { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+        .star {
+            position: absolute; height: 2px; background: white;
+            border-radius: 50%; opacity: 0.6;
+            animation: twinkle 3s infinite;
         }
-        #bg-overlay {
-            position: fixed; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8));
-            display: none; z-index: 0;
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+
+        #player-container {
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+            z-index: 10; width: 90%; max-width: 350px;
+            background: rgba(76, 29, 149, 0.6); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px; border-radius: 25px;
+            display: none; flex-direction: column; gap: 15px;
         }
-
-        /* Signature */
-        #name { 
-            position: absolute; top: 30px; right: 40px; font-size: 22px; font-weight: 700; 
-            z-index: 2; letter-spacing: 1px; text-shadow: 0 4px 10px rgba(0,0,0,0.8); display: none;
-        }
-
-        /* Bintang Jatuh */
-        .star { 
-            position: absolute; width: 30px; height: 30px; 
-            background-image: url('https://w7.pngwing.com/pngs/883/837/png-transparent-yellow-star-illustration-falling-pixel-star-pro-pixel-art-star-thumbnail.png'); 
-            background-size: contain; background-repeat: no-repeat;
-            filter: drop-shadow(-8px -8px 12px rgba(255, 255, 255, 0.9)); 
-            z-index: 1; pointer-events: none; animation: fall linear forwards;
-        }
-
-        @keyframes fall {
-            0% { transform: translate(0, 0) scale(1); opacity: 0; }
-            10% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { transform: translate(120vw, 120vh) scale(0.5); opacity: 0; }
-        }
-
-        /* Player */
-        #player { 
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); 
-            background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-            z-index: 10; display: none; flex-direction: column; gap: 15px;
-        }
-
-        .song-info { text-align: center; }
-        #song-title { font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
-        #song-artist { font-size: 14px; color: #b3b3b3; transition: color 0.3s; }
-
-        /* Progress Bar */
-        .progress-container { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #b3b3b3; }
-        #progress-bar { 
-            flex-grow: 1; -webkit-appearance: none; height: 5px; background: rgba(255,255,255,0.2); 
-            border-radius: 5px; outline: none; cursor: pointer;
-        }
-        #progress-bar::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
-            border-radius: 50%; background: #fff; cursor: pointer; transition: transform 0.1s;
-        }
-        #progress-bar::-webkit-slider-thumb:hover { transform: scale(1.3); }
-
-        /* Controls */
-        .controls { display: flex; justify-content: center; align-items: center; gap: 25px; }
-        .btn { background: none; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .btn:hover { color: #1db954; transform: scale(1.1); }
-        .btn svg { width: 24px; height: 24px; fill: currentColor; }
-        
-        .btn-play { background: #fff; color: #000; width: 50px; height: 50px; border-radius: 50%; }
-        .btn-play:hover { background: #1db954; color: #fff; transform: scale(1.05); }
-        .btn-play svg { width: 20px; height: 20px; }
-
-        /* PENTING: YT Player tidak boleh display: none */
-        #yt-container { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; z-index: -999; }
     </style>
 </head>
 <body>
 
-<div id="intro"><h1>Click Anywhere</h1></div>
+<div class="overlay"></div>
 
-<div id="bg"></div>
-<div id="bg-overlay"></div>
-<div id="name">By Yaezz</div>
-
-<div id="player">
-    <div class="song-info">
-        <div id="song-title">Memuat Player...</div>
-        <div id="song-artist">Mohon tunggu</div>
-    </div>
-    
-    <div class="progress-container">
-        <span id="time-current">0:00</span>
-        <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
-        <span id="time-duration">0:00</span>
-    </div>
-
-    <div class="controls">
-        <button class="btn" onclick="prevSong()"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-        <button class="btn btn-play" onclick="togglePlay()">
-            <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-        </button>
-        <button class="btn" onclick="nextSong()"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+<div id="intro" onclick="startExperience()">
+    <div class="intro-card">
+        <h1 class="text-3xl font-semibold mb-2">Music Player</h1>
+        <p class="text-violet-200 text-sm">Ketuk di mana saja untuk memulai</p>
     </div>
 </div>
 
-<!-- Container transparan untuk YouTube -->
-<div id="yt-container"><div id="yt-player"></div></div>
+<div class="night" id="star-container"></div>
+
+<div id="player-container">
+    <div class="text-center">
+        <div id="song-title" class="text-lg font-medium truncate">Memuat...</div>
+        <div id="song-artist" class="text-violet-300 text-sm">Harap tunggu</div>
+    </div>
+    <input type="range" id="progress-bar" class="w-full h-1 bg-violet-300/50 rounded-lg appearance-none cursor-pointer" value="0">
+    <div class="flex justify-center items-center gap-8">
+        <button onclick="prevSong()" class="text-white hover:text-violet-300">⏮</button>
+        <button onclick="togglePlay()" id="play-btn" class="text-4xl hover:scale-110 transition">▶</button>
+        <button onclick="nextSong()" class="text-white hover:text-violet-300">⏭</button>
+    </div>
+</div>
+
+<div id="yt-player" class="hidden"></div>
 
 <script>
     const playlist = [
-        { title: "Space Song", artist: "Beach House", id: "RBtlPT23PTM" },
-        { title: "Myth", artist: "Beach House", id: "FvqNdJJMqaA" },
-        { title: "When You Sleep", artist: "My Bloody Valentine", id: "l9bTWAgYCFk" },
-        { title: "Cherry-coloured Funk", artist: "Cocteau Twins", id: "WQNkEaA0g2s" },
-        { title: "Sunsetz", artist: "Cigarettes After Sex", id: "WSByUqQ_d-w" },
-        { title: "Cry", artist: "Cigarettes After Sex", id: "2T0q1P_-IQQ" },
-        { title: "alife", artist: "Slowdive", id: "GkXG-Z11rE8" },
-        { title: "Sugar for the Pill", artist: "Slowdive", id: "BxwPBwqm6Zs" },
+        { title: "Space Song", artist: "Beach House", id: "0wtuCRt5I6g" },
+        { title: "Myth", artist: "Beach House", id: "5gT1T303_P4" },
+        { title: "When You Sleep", artist: "MBV", id: "l9bTWAgYCFk" },
+        { title: "Sunsetz", artist: "Cigarettes After Sex", id: "biwWsP2BuRM" },
+        { title: "Apocalypse", artist: "Cigarettes After Sex", id: "sT98Pj0Mz0U" },
         { title: "Always Forever", artist: "Cults", id: "rxW0oB8mOxc" },
-        { title: "seasons", artist: "wave to earth", id: "x4x_P_I1jAE" },
-        { title: "Robbers", artist: "The 1975", id: "Iyy3YaHWz-Y" },
-        { title: "Fallingforyou", artist: "The 1975", id: "iF2s_wBwKqI" },
-        { title: "Medicine", artist: "The 1975", id: "8b2O0EaDk4M" },
-        { title: "Lostmyhead", artist: "The 1975", id: "2o_BngS62wA" },
-        { title: "Me", artist: "The 1975", id: "HkQpBIfn91U" },
-        { title: "You", artist: "The 1975", id: "N6AImt2mYng" },
-        { title: "Haunt // Bed", artist: "The 1975", id: "5Vz1yI2O0E8" },
+        { title: "Seasons", artist: "wave to earth", id: "x4x_P_I1jAE" },
+        { title: "Robbers", artist: "The 1975", id: "4H7sW_cO05M" },
         { title: "Somebody Else", artist: "The 1975", id: "BQMpCWu_A0M" },
         { title: "End of Beginning", artist: "Djo", id: "1tQ1p817Gxk" },
-        { title: "Wild Heart", artist: "Bleachers", id: "1i1B-K30LDU" },
-        { title: "Chinatown", artist: "Bleachers", id: "l2zY140vBEY" },
-        { title: "Transatlanticism", artist: "Death Cab for Cutie", id: "qNqQC7R_Me4" },
-        { title: "Heroes", artist: "David Bowie", id: "lXgkuM2NhYI" },
-        { title: "Shot At The Night", artist: "The Killers", id: "X4YK-DEkvcw" },
-        { title: "Wait", artist: "M83", id: "lAwYodrBr2Q" },
-        { title: "23", artist: "Jimmy Eat World", id: "3gA3z92G1Hk" },
-        { title: "Existentialism on Prom Night", artist: "Straylight Run", id: "T_KzB0j2n5w" },
-        { title: "Bitter Sweet Symphony", artist: "The Verve", id: "1lyu1KKwC74" },
-        { title: "Crush", artist: "Ethel Cain", id: "t1Lz9530kF8" },
-        { title: "Thoroughfare", artist: "Ethel Cain", id: "wX-y00nO22w" },
-        { title: "American Teenager", artist: "Ethel Cain", id: "GkXG-Z11rE8" },
         { title: "Sofia", artist: "Clairo", id: "L9l8zCOwEII" },
-        { title: "Bags", artist: "Clairo", id: "L9l8zCOwEII" },
         { title: "Kyoto", artist: "Phoebe Bridgers", id: "Tw0zYd0eIlk" },
-        { title: "Chinese Satellite", artist: "Phoebe Bridgers", id: "Wz_dD7n1p3k" },
-        { title: "Scott Street", artist: "Phoebe Bridgers", id: "8l836N_m58E" },
-        { title: "Did you know that there's a tunnel", artist: "Lana Del Rey", id: "1yWbI2x0b00" },
-        { title: "Venice Bitch", artist: "Lana Del Rey", id: "VDmhiqDhhX8" },
-        { title: "Brooklyn Baby", artist: "Lana Del Rey", id: "T5xcnjAG8pE" },
-        { title: "Come Inside Of My Heart", artist: "IV OF SPADES", id: "vV23s8i0h2k" },
-        { title: "mirrorball", artist: "Taylor Swift", id: "AWeq-1h9N-k" },
-        { title: "You Are In Love", artist: "Taylor Swift", id: "UPEiK_10bWc" },
-        { title: "august", artist: "Taylor Swift", id: "nn_0zPAfyo8" },
-        { title: "Guilty As Sin?", artist: "Taylor Swift", id: "NnF2H5Q8i7A" },
-        { title: "Strawberries & Cigarettes", artist: "Troye Sivan", id: "XzW5M-GqAok" },
-        { title: "The Scientist", artist: "Coldplay", id: "RB-RcX5DS5A" },
-        { title: "Fix You", artist: "Coldplay", id: "k4V3Mo61fJM" },
-        { title: "Everytime", artist: "Britney Spears", id: "8YzabSdk7ZA" }
+        { title: "August", artist: "Taylor Swift", id: "nn_0zpx40_4" }
     ];
 
-    let player;
-    let currentIdx = 0;
-    let isPlaying = false;
-    let progressInterval;
-    let isDragging = false;
-    let errorTimeout;
+    let player, currentIdx = 0;
 
-    // 1. Inisialisasi setelah layar diklik
-    document.getElementById('intro').onclick = () => {
-        const intro = document.getElementById('intro');
-        intro.style.opacity = '0';
-        setTimeout(() => { intro.style.display = 'none'; }, 1000);
-
-        document.getElementById('bg').style.display = 'block';
-        document.getElementById('bg-overlay').style.display = 'block';
-        document.getElementById('name').style.display = 'block';
-        document.getElementById('player').style.display = 'flex';
-        setTimeout(() => { document.getElementById('bg').style.opacity = '1'; }, 100);
-
-        initYouTubePlayer();
-        startStarShower();
-    };
-
-    // 2. Setup YouTube API
-    function initYouTubePlayer() {
-        player = new YT.Player('yt-player', {
-            height: '100', width: '100', // Harus ada ukuran agar YT tidak error
-            videoId: playlist[currentIdx].id,
-            playerVars: { 'autoplay': 1, 'controls': 0, 'disablekb': 1, 'origin': window.location.origin },
-            events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange,
-                'onError': onPlayerError
-            }
-        });
+    function startExperience() {
+        document.getElementById('intro').style.opacity = '0';
+        setTimeout(() => document.getElementById('intro').remove(), 800);
+        document.getElementById('player-container').style.display = 'flex';
+        generateStars();
+        initPlayer();
     }
 
-    function onPlayerReady(event) {
-        updateSongInfo();
-        event.target.playVideo();
-        startProgressTracker();
-    }
-
-    function onPlayerStateChange(event) {
-        clearTimeout(errorTimeout); // Bersihkan error jika berhasil mutar
-        document.getElementById('song-artist').style.color = '#b3b3b3'; 
-
-        if (event.data === YT.PlayerState.PLAYING) {
-            isPlaying = true; updatePlayPauseUI();
-        } else if (event.data === YT.PlayerState.PAUSED) {
-            isPlaying = false; updatePlayPauseUI();
-        } else if (event.data === YT.PlayerState.ENDED) {
-            nextSong();
+    function generateStars() {
+        const cont = document.getElementById('star-container');
+        for(let i=0; i<30; i++) {
+            const s = document.createElement('div');
+            s.className = 'star';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.width = Math.random() * 3 + 'px';
+            s.style.height = s.style.width;
+            cont.appendChild(s);
         }
     }
 
-    // 3. Penanganan Error Jika Lagu Diblokir (Penyebab Bug Sebelumnya)
-    function onPlayerError(event) {
-        document.getElementById('song-title').innerText = playlist[currentIdx].title;
-        document.getElementById('song-artist').innerText = "Diblokir YouTube (Melewati dalam 3s...)";
-        document.getElementById('song-artist').style.color = '#ff4d4d'; // Warna merah
-        
-        // Kasih jeda 3 detik sebelum lompat agar tidak spam pergantian judul
-        errorTimeout = setTimeout(() => {
-            nextSong();
-        }, 3000);
-    }
-
-    function updateSongInfo() {
+    function initPlayer() {
+        player = new YT.Player('yt-player', {
+            videoId: playlist[currentIdx].id,
+            events: {
+                'onReady': (e) => e.target.playVideo(),
+                'onStateChange': (e) => {
+                    if(e.data == 1) document.getElementById('play-btn').innerText = '⏸';
+                    else document.getElementById('play-btn').innerText = '▶';
+                    if(e.data == 0) nextSong();
+                },
+                'onError': () => nextSong() // Skip otomatis jika diblokir
+            }
+        });
         document.getElementById('song-title').innerText = playlist[currentIdx].title;
         document.getElementById('song-artist').innerText = playlist[currentIdx].artist;
     }
 
     function togglePlay() {
-        if (!player || !player.getPlayerState) return;
-        if (isPlaying) player.pauseVideo(); else player.playVideo();
-    }
-
-    function updatePlayPauseUI() {
-        document.getElementById('icon-play').style.display = isPlaying ? 'none' : 'block';
-        document.getElementById('icon-pause').style.display = isPlaying ? 'block' : 'none';
+        if(player.getPlayerState() == 1) player.pauseVideo();
+        else player.playVideo();
     }
 
     function nextSong() {
-        clearTimeout(errorTimeout);
         currentIdx = (currentIdx + 1) % playlist.length;
-        if (player && player.loadVideoById) player.loadVideoById(playlist[currentIdx].id);
-        updateSongInfo();
+        player.loadVideoById(playlist[currentIdx].id);
+        document.getElementById('song-title').innerText = playlist[currentIdx].title;
+        document.getElementById('song-artist').innerText = playlist[currentIdx].artist;
     }
 
     function prevSong() {
-        clearTimeout(errorTimeout);
         currentIdx = (currentIdx - 1 + playlist.length) % playlist.length;
-        if (player && player.loadVideoById) player.loadVideoById(playlist[currentIdx].id);
-        updateSongInfo();
-    }
-
-    // 4. Tracker Progress Bar
-    function startProgressTracker() {
-        const progressBar = document.getElementById('progress-bar');
-        const timeCurrent = document.getElementById('time-current');
-        const timeDuration = document.getElementById('time-duration');
-
-        setInterval(() => {
-            if (player && player.getPlayerState && player.getPlayerState() === YT.PlayerState.PLAYING && !isDragging) {
-                const current = player.getCurrentTime();
-                const duration = player.getDuration();
-                if (duration > 0) {
-                    progressBar.value = (current / duration) * 100;
-                    timeCurrent.innerText = formatTime(current);
-                    timeDuration.innerText = formatTime(duration);
-                }
-            }
-        }, 500);
-
-        progressBar.addEventListener('mousedown', () => isDragging = true);
-        progressBar.addEventListener('touchstart', () => isDragging = true);
-        progressBar.addEventListener('change', (e) => {
-            if (player && player.seekTo) {
-                const duration = player.getDuration();
-                player.seekTo((e.target.value / 100) * duration, true);
-            }
-            isDragging = false;
-        });
-        progressBar.addEventListener('mouseup', () => isDragging = false);
-        progressBar.addEventListener('touchend', () => isDragging = false);
-    }
-
-    function formatTime(sec) {
-        const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-
-    // 5. Animasi Bintang
-    function startStarShower() {
-        setInterval(() => {
-            const star = document.createElement('div');
-            star.className = 'star';
-            if (Math.random() > 0.5) { star.style.left = Math.random() * window.innerWidth + 'px'; star.style.top = '-50px'; } 
-            else { star.style.left = '-50px'; star.style.top = Math.random() * window.innerHeight + 'px'; }
-            
-            const duration = 2 + Math.random() * 3;
-            star.style.animationDuration = duration + 's';
-            document.body.appendChild(star);
-            setTimeout(() => star.remove(), duration * 1000);
-        }, 800);
+        player.loadVideoById(playlist[currentIdx].id);
+        document.getElementById('song-title').innerText = playlist[currentIdx].title;
+        document.getElementById('song-artist').innerText = playlist[currentIdx].artist;
     }
 </script>
 </body>
